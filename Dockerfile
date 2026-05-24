@@ -1,4 +1,5 @@
-FROM nginx:alpine
-COPY index.html /usr/share/nginx/html/index.html
-EXPOSE 80
-ENV PORT=80 HOSTNAME=0.0.0.0
+FROM node:22-alpine
+WORKDIR /app
+COPY server.js index.html ./
+EXPOSE 3000
+CMD ["node", "server.js"]
