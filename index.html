@@ -6,6 +6,12 @@
   <title>Vibrate</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <style>
+    :root {
+      --accent: #5ea8ff;
+      --accent-soft: rgba(94, 168, 255, 0.55);
+      --text: #f4f6fb;
+    }
+
     * {
       margin: 0;
       padding: 0;
@@ -15,11 +21,13 @@
     html, body {
       width: 100%;
       height: 100%;
-      background: #000;
-      color: #fff;
+      background:
+        radial-gradient(120% 90% at 50% -10%, #14203a 0%, #0a0f1c 45%, #05070d 100%);
+      color: var(--text);
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
       overflow: hidden;
       touch-action: none;
+      -webkit-font-smoothing: antialiased;
     }
 
     #app {
@@ -28,58 +36,137 @@
       align-items: center;
       justify-content: center;
       height: 100dvh;
-      gap: 24px;
+      gap: 40px;
       user-select: none;
+      padding: 32px;
     }
 
     #status {
-      font-size: 18px;
-      opacity: 0.7;
-      letter-spacing: 0.05em;
+      font-size: 17px;
+      font-weight: 500;
+      letter-spacing: 0.06em;
+      opacity: 0.85;
+      text-align: center;
+      transition: opacity 0.3s ease;
+    }
+
+    /* --- Indicator with concentric pulse rings --- */
+    .indicator-wrap {
+      position: relative;
+      width: 200px;
+      height: 200px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .indicator-wrap::before,
+    .indicator-wrap::after {
+      content: '';
+      position: absolute;
+      width: 88px;
+      height: 88px;
+      border-radius: 50%;
+      border: 1.5px solid var(--accent-soft);
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .indicator-wrap.active::before {
+      animation: ripple 2s ease-out infinite;
+    }
+    .indicator-wrap.active::after {
+      animation: ripple 2s ease-out infinite 1s;
+    }
+
+    @keyframes ripple {
+      0%   { opacity: 0.6; transform: scale(1); }
+      100% { opacity: 0;   transform: scale(2.1); }
     }
 
     #indicator {
-      width: 80px;
-      height: 80px;
+      width: 88px;
+      height: 88px;
       border-radius: 50%;
-      background: #fff;
-      transition: transform 0.05s ease, opacity 0.05s ease;
+      background: radial-gradient(circle at 32% 28%, #ffffff 0%, var(--accent) 70%, #2f6dc4 100%);
+      box-shadow:
+        0 0 0 1px rgba(255,255,255,0.15),
+        0 0 32px 4px var(--accent-soft),
+        0 10px 30px rgba(0,0,0,0.45);
+      transition: transform 0.12s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.12s ease;
     }
 
     #indicator.pulse {
-      transform: scale(1.3);
-      opacity: 0.4;
+      transform: scale(1.32);
+      box-shadow:
+        0 0 0 1px rgba(255,255,255,0.3),
+        0 0 56px 12px var(--accent-soft),
+        0 10px 30px rgba(0,0,0,0.45);
     }
 
-    #wake-status {
-      font-size: 13px;
-      opacity: 0.4;
-      text-align: center;
-      padding: 0 24px;
+    /* Paused look */
+    .indicator-wrap.paused #indicator {
+      background: radial-gradient(circle at 32% 28%, #6b7488 0%, #3a4254 70%, #272d3a 100%);
+      box-shadow:
+        0 0 0 1px rgba(255,255,255,0.08),
+        0 6px 20px rgba(0,0,0,0.45);
     }
 
     #toggle-btn {
-      margin-top: 12px;
-      padding: 12px 32px;
-      border-radius: 24px;
-      border: 1px solid rgba(255,255,255,0.3);
-      background: transparent;
+      min-width: 168px;
+      padding: 15px 36px;
+      border-radius: 30px;
+      border: none;
+      background: linear-gradient(180deg, #5ea8ff 0%, #3d7fe0 100%);
       color: #fff;
       font-size: 16px;
+      font-weight: 600;
+      letter-spacing: 0.03em;
       cursor: pointer;
-      transition: background 0.2s;
+      box-shadow: 0 8px 22px rgba(61, 127, 224, 0.4);
+      transition: transform 0.12s ease, box-shadow 0.2s ease, background 0.2s ease;
       -webkit-tap-highlight-color: transparent;
     }
 
     #toggle-btn:active {
-      background: rgba(255,255,255,0.1);
+      transform: translateY(1px) scale(0.98);
+      box-shadow: 0 4px 12px rgba(61, 127, 224, 0.35);
+    }
+
+    #toggle-btn.paused {
+      background: linear-gradient(180deg, #2b3346 0%, #1d2533 100%);
+      box-shadow: 0 8px 22px rgba(0, 0, 0, 0.4);
+      border: 1px solid rgba(255,255,255,0.12);
+    }
+
+    #wake-status {
+      font-size: 12.5px;
+      opacity: 0.45;
+      text-align: center;
+      letter-spacing: 0.02em;
+      padding: 0 24px;
+      display: flex;
+      align-items: center;
+      gap: 7px;
+    }
+
+    #wake-status::before {
+      content: '';
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #4ad17f;
+      box-shadow: 0 0 8px #4ad17f;
+      flex: none;
     }
   </style>
 </head>
 <body>
   <div id="app">
     <div id="status">Вибрация каждую секунду</div>
-    <div id="indicator"></div>
+    <div class="indicator-wrap active" id="indicator-wrap">
+      <div id="indicator"></div>
+    </div>
     <button id="toggle-btn">Стоп</button>
     <div id="wake-status">Экран не будет гаснуть</div>
   </div>
@@ -93,6 +180,7 @@
 
     const haptic = tg?.HapticFeedback;
     const indicator = document.getElementById('indicator');
+    const indicatorWrap = document.getElementById('indicator-wrap');
     const statusEl = document.getElementById('status');
     const toggleBtn = document.getElementById('toggle-btn');
     const wakeStatusEl = document.getElementById('wake-status');
@@ -130,10 +218,16 @@
       if (running) {
         startVibrating();
         toggleBtn.textContent = 'Стоп';
+        toggleBtn.classList.remove('paused');
+        indicatorWrap.classList.add('active');
+        indicatorWrap.classList.remove('paused');
         statusEl.textContent = 'Вибрация каждую секунду';
       } else {
         stopVibrating();
         toggleBtn.textContent = 'Старт';
+        toggleBtn.classList.add('paused');
+        indicatorWrap.classList.remove('active');
+        indicatorWrap.classList.add('paused');
         statusEl.textContent = 'Пауза';
       }
     });
