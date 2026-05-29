@@ -2,10 +2,22 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no" />
   <title>Vibrate</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <style>
+    :root {
+      --bg-0: #07070c;
+      --bg-1: #14112a;
+      --accent: #7c5cff;
+      --accent-2: #b06bff;
+      --text: #f4f4f7;
+      --muted: rgba(244, 244, 247, 0.55);
+      --faint: rgba(244, 244, 247, 0.35);
+      --surface: rgba(255, 255, 255, 0.06);
+      --surface-brd: rgba(255, 255, 255, 0.12);
+    }
+
     * {
       margin: 0;
       padding: 0;
@@ -15,72 +27,213 @@
     html, body {
       width: 100%;
       height: 100%;
-      background: #000;
-      color: #fff;
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: var(--bg-0);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
       overflow: hidden;
       touch-action: none;
+      -webkit-font-smoothing: antialiased;
     }
 
     #app {
+      position: relative;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
       height: 100dvh;
-      gap: 24px;
+      gap: 40px;
       user-select: none;
+      padding: calc(env(safe-area-inset-top) + 24px) 24px calc(env(safe-area-inset-bottom) + 24px);
+      background:
+        radial-gradient(120% 80% at 50% 28%, rgba(124, 92, 255, 0.18) 0%, transparent 55%),
+        radial-gradient(100% 70% at 50% 100%, rgba(176, 107, 255, 0.10) 0%, transparent 60%),
+        linear-gradient(180deg, var(--bg-1) 0%, var(--bg-0) 65%);
+      overflow: hidden;
     }
 
-    #status {
-      font-size: 18px;
-      opacity: 0.7;
-      letter-spacing: 0.05em;
+    /* Wordmark */
+    .wordmark {
+      position: absolute;
+      top: calc(env(safe-area-inset-top) + 22px);
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 0.42em;
+      text-indent: 0.42em;
+      color: var(--faint);
+      text-transform: uppercase;
+    }
+
+    /* Halo: indicator + sonar rings */
+    .halo {
+      position: relative;
+      width: 240px;
+      height: 240px;
+      display: grid;
+      place-items: center;
+    }
+
+    .ring {
+      position: absolute;
+      width: 96px;
+      height: 96px;
+      border-radius: 50%;
+      border: 1.5px solid var(--accent);
+      opacity: 0;
+      animation: sonar 2.4s cubic-bezier(0.22, 0.61, 0.36, 1) infinite;
+      pointer-events: none;
+    }
+    .ring:nth-child(2) { animation-delay: 0.8s; }
+    .ring:nth-child(3) { animation-delay: 1.6s; }
+
+    @keyframes sonar {
+      0%   { transform: scale(0.7); opacity: 0.55; }
+      70%  { opacity: 0.12; }
+      100% { transform: scale(2.5); opacity: 0; }
     }
 
     #indicator {
-      width: 80px;
-      height: 80px;
+      position: relative;
+      width: 96px;
+      height: 96px;
       border-radius: 50%;
-      background: #fff;
-      transition: transform 0.05s ease, opacity 0.05s ease;
+      background:
+        radial-gradient(circle at 36% 30%, #ffffff 0%, var(--accent-2) 42%, var(--accent) 100%);
+      box-shadow:
+        0 0 0 1px rgba(255, 255, 255, 0.10) inset,
+        0 10px 40px rgba(124, 92, 255, 0.55),
+        0 0 60px rgba(124, 92, 255, 0.45);
+      transition:
+        transform 0.13s ease-out,
+        box-shadow 0.13s ease-out,
+        filter 0.13s ease-out;
     }
 
     #indicator.pulse {
-      transform: scale(1.3);
-      opacity: 0.4;
+      transform: scale(1.16);
+      filter: brightness(1.18);
+      box-shadow:
+        0 0 0 1px rgba(255, 255, 255, 0.18) inset,
+        0 14px 56px rgba(124, 92, 255, 0.75),
+        0 0 90px rgba(176, 107, 255, 0.65);
     }
 
-    #wake-status {
-      font-size: 13px;
-      opacity: 0.4;
+    /* Text block */
+    .info {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
       text-align: center;
-      padding: 0 24px;
     }
 
+    #status {
+      font-size: 19px;
+      font-weight: 600;
+      letter-spacing: 0.01em;
+      color: var(--text);
+    }
+
+    .info .hint {
+      font-size: 13px;
+      color: var(--muted);
+      letter-spacing: 0.02em;
+    }
+
+    /* Toggle button */
     #toggle-btn {
-      margin-top: 12px;
-      padding: 12px 32px;
-      border-radius: 24px;
-      border: 1px solid rgba(255,255,255,0.3);
-      background: transparent;
-      color: #fff;
+      min-width: 168px;
+      padding: 15px 36px;
+      border-radius: 999px;
+      border: 1px solid var(--surface-brd);
+      background: var(--surface);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      color: var(--text);
       font-size: 16px;
+      font-weight: 600;
+      letter-spacing: 0.02em;
       cursor: pointer;
-      transition: background 0.2s;
+      transition: transform 0.12s ease, background 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
       -webkit-tap-highlight-color: transparent;
     }
 
     #toggle-btn:active {
-      background: rgba(255,255,255,0.1);
+      transform: scale(0.96);
+    }
+
+    /* Paused state — invite to start */
+    #app.paused #indicator {
+      filter: saturate(0.35) brightness(0.55);
+      box-shadow:
+        0 0 0 1px rgba(255, 255, 255, 0.08) inset,
+        0 8px 28px rgba(0, 0, 0, 0.4);
+    }
+
+    #app.paused .ring {
+      animation-play-state: paused;
+      opacity: 0;
+    }
+
+    #app.paused #toggle-btn {
+      background: linear-gradient(135deg, var(--accent) 0%, var(--accent-2) 100%);
+      border-color: transparent;
+      box-shadow: 0 10px 30px rgba(124, 92, 255, 0.5);
+    }
+
+    /* Wake status chip */
+    #wake-status {
+      position: absolute;
+      bottom: calc(env(safe-area-inset-bottom) + 22px);
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12.5px;
+      color: var(--muted);
+      letter-spacing: 0.01em;
+      padding: 7px 14px;
+      border-radius: 999px;
+      background: var(--surface);
+      border: 1px solid var(--surface-brd);
+      max-width: calc(100% - 48px);
+      text-align: center;
+    }
+
+    #wake-status::before {
+      content: "";
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #4ade80;
+      box-shadow: 0 0 8px rgba(74, 222, 128, 0.8);
+      flex: 0 0 auto;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .ring { animation: none; opacity: 0; }
+      #indicator { transition: filter 0.13s ease-out; }
+      #indicator.pulse { transform: none; }
     }
   </style>
 </head>
 <body>
   <div id="app">
-    <div id="status">Вибрация каждую секунду</div>
-    <div id="indicator"></div>
+    <div class="wordmark">Vibrate</div>
+
+    <div class="halo">
+      <span class="ring"></span>
+      <span class="ring"></span>
+      <span class="ring"></span>
+      <div id="indicator"></div>
+    </div>
+
+    <div class="info">
+      <div id="status">Вибрация каждую секунду</div>
+      <div class="hint">Нажмите, чтобы приостановить</div>
+    </div>
+
     <button id="toggle-btn">Стоп</button>
+
     <div id="wake-status">Экран не будет гаснуть</div>
   </div>
 
@@ -89,9 +242,15 @@
     if (tg) {
       tg.ready();
       tg.expand();
+      // Cosmetic: blend Telegram chrome with the app theme
+      try {
+        tg.setHeaderColor('#07070c');
+        tg.setBackgroundColor('#07070c');
+      } catch (e) {}
     }
 
     const haptic = tg?.HapticFeedback;
+    const appEl = document.getElementById('app');
     const indicator = document.getElementById('indicator');
     const statusEl = document.getElementById('status');
     const toggleBtn = document.getElementById('toggle-btn');
@@ -136,6 +295,8 @@
         toggleBtn.textContent = 'Старт';
         statusEl.textContent = 'Пауза';
       }
+      // Visual-only state reflection
+      appEl.classList.toggle('paused', !running);
     });
 
     // --- Screen Wake Lock ---
