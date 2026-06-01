@@ -6,82 +6,317 @@
   <title>Vibrate</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <style>
+    :root {
+      --bg-0: #07070b;
+      --bg-1: #0f0f17;
+      --accent: #7c5cff;
+      --accent-2: #00d4ff;
+      --accent-soft: rgba(124, 92, 255, 0.18);
+      --text: #ffffff;
+      --text-dim: rgba(255, 255, 255, 0.55);
+      --text-faint: rgba(255, 255, 255, 0.35);
+      --surface: rgba(255, 255, 255, 0.04);
+      --surface-border: rgba(255, 255, 255, 0.08);
+    }
+
     * {
       margin: 0;
       padding: 0;
       box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
     }
 
     html, body {
       width: 100%;
       height: 100%;
-      background: #000;
-      color: #fff;
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: var(--bg-0);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', 'Inter', sans-serif;
       overflow: hidden;
       touch-action: none;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      background:
+        radial-gradient(60% 50% at 50% 18%, rgba(124, 92, 255, 0.22) 0%, transparent 70%),
+        radial-gradient(70% 60% at 50% 100%, rgba(0, 212, 255, 0.10) 0%, transparent 70%),
+        linear-gradient(180deg, #0a0a12 0%, #07070b 100%);
+      z-index: -1;
+    }
+
+    body::after {
+      content: "";
+      position: fixed;
+      inset: 0;
+      background-image:
+        radial-gradient(rgba(255,255,255,0.04) 1px, transparent 1px);
+      background-size: 22px 22px;
+      mask-image: radial-gradient(ellipse at center, black 30%, transparent 75%);
+      -webkit-mask-image: radial-gradient(ellipse at center, black 30%, transparent 75%);
+      pointer-events: none;
+      z-index: -1;
     }
 
     #app {
+      position: relative;
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: center;
+      justify-content: space-between;
       height: 100dvh;
-      gap: 24px;
+      padding: 56px 24px 40px;
       user-select: none;
     }
 
+    .header {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--text-faint);
+    }
+
+    .brand-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--accent);
+      box-shadow: 0 0 12px var(--accent);
+      animation: brand-blink 2.4s ease-in-out infinite;
+    }
+
+    @keyframes brand-blink {
+      0%, 100% { opacity: 0.45; }
+      50% { opacity: 1; }
+    }
+
     #status {
-      font-size: 18px;
-      opacity: 0.7;
-      letter-spacing: 0.05em;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 18px;
+      font-size: 14px;
+      font-weight: 500;
+      letter-spacing: 0.02em;
+      color: var(--text);
+      background: var(--surface);
+      border: 1px solid var(--surface-border);
+      border-radius: 999px;
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      transition: color 0.25s ease, background 0.25s ease, border-color 0.25s ease;
+    }
+
+    #status::before {
+      content: "";
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--accent);
+      box-shadow: 0 0 10px var(--accent), 0 0 22px var(--accent-soft);
+      transition: background 0.25s ease, box-shadow 0.25s ease;
+    }
+
+    #app.paused #status::before {
+      background: var(--text-faint);
+      box-shadow: none;
+    }
+
+    .stage {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 280px;
+      height: 280px;
+    }
+
+    .ring {
+      position: absolute;
+      border-radius: 50%;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      pointer-events: none;
+    }
+
+    .ring-1 { inset: 0; }
+    .ring-2 { inset: 32px; border-color: rgba(255,255,255,0.04); }
+    .ring-3 { inset: 64px; border-color: rgba(255,255,255,0.03); }
+
+    .wave {
+      position: absolute;
+      inset: 0;
+      border-radius: 50%;
+      border: 1.5px solid var(--accent);
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    #app.pulsing .wave {
+      animation: wave 1s ease-out;
+    }
+
+    @keyframes wave {
+      0% {
+        transform: scale(0.55);
+        opacity: 0.7;
+        border-color: var(--accent);
+      }
+      100% {
+        transform: scale(1.15);
+        opacity: 0;
+        border-color: var(--accent-2);
+      }
     }
 
     #indicator {
-      width: 80px;
-      height: 80px;
+      position: relative;
+      width: 128px;
+      height: 128px;
       border-radius: 50%;
-      background: #fff;
-      transition: transform 0.05s ease, opacity 0.05s ease;
+      background:
+        radial-gradient(circle at 35% 30%, #ffffff 0%, #e9e6ff 40%, #b9a8ff 80%, #7c5cff 100%);
+      box-shadow:
+        0 0 0 1px rgba(255,255,255,0.08) inset,
+        0 18px 60px rgba(124, 92, 255, 0.45),
+        0 0 80px rgba(124, 92, 255, 0.35);
+      transition: transform 0.18s cubic-bezier(0.34, 1.56, 0.64, 1),
+                  box-shadow 0.18s ease,
+                  filter 0.25s ease;
+    }
+
+    #indicator::after {
+      content: "";
+      position: absolute;
+      inset: 12px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 50% 50%, rgba(255,255,255,0.35), transparent 60%);
+      pointer-events: none;
+      mix-blend-mode: screen;
     }
 
     #indicator.pulse {
-      transform: scale(1.3);
-      opacity: 0.4;
+      transform: scale(1.12);
+      box-shadow:
+        0 0 0 1px rgba(255,255,255,0.12) inset,
+        0 22px 70px rgba(124, 92, 255, 0.65),
+        0 0 110px rgba(124, 92, 255, 0.55);
     }
 
-    #wake-status {
-      font-size: 13px;
-      opacity: 0.4;
-      text-align: center;
-      padding: 0 24px;
+    #app.paused #indicator {
+      background:
+        radial-gradient(circle at 35% 30%, #2a2a35 0%, #1c1c25 60%, #131319 100%);
+      box-shadow:
+        0 0 0 1px rgba(255,255,255,0.06) inset,
+        0 10px 40px rgba(0,0,0,0.5);
+      filter: saturate(0.5);
+    }
+
+    .footer {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 18px;
+      width: 100%;
+      max-width: 360px;
     }
 
     #toggle-btn {
-      margin-top: 12px;
-      padding: 12px 32px;
-      border-radius: 24px;
-      border: 1px solid rgba(255,255,255,0.3);
-      background: transparent;
-      color: #fff;
+      position: relative;
+      width: 100%;
+      padding: 18px 32px;
+      border-radius: 18px;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      background: linear-gradient(180deg, rgba(255,255,255,0.08), rgba(255,255,255,0.03));
+      color: var(--text);
       font-size: 16px;
+      font-weight: 600;
+      letter-spacing: 0.02em;
       cursor: pointer;
-      transition: background 0.2s;
-      -webkit-tap-highlight-color: transparent;
+      overflow: hidden;
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      transition: transform 0.15s ease, background 0.2s ease, border-color 0.2s ease, box-shadow 0.25s ease;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.35), 0 0 0 1px rgba(255,255,255,0.02) inset;
+    }
+
+    #app.paused #toggle-btn {
+      background: linear-gradient(135deg, #7c5cff 0%, #5d3bff 100%);
+      border-color: transparent;
+      box-shadow:
+        0 12px 32px rgba(124, 92, 255, 0.45),
+        0 0 0 1px rgba(255,255,255,0.12) inset;
     }
 
     #toggle-btn:active {
-      background: rgba(255,255,255,0.1);
+      transform: scale(0.98);
+    }
+
+    #wake-status {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      color: var(--text-faint);
+      letter-spacing: 0.02em;
+      text-align: center;
+      padding: 0 12px;
+    }
+
+    #wake-status::before {
+      content: "";
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background:
+        radial-gradient(circle at 50% 35%, #ffd166 0%, #ff9f1c 70%, transparent 71%);
+      box-shadow: 0 0 8px rgba(255, 159, 28, 0.45);
+      flex-shrink: 0;
+    }
+
+    @media (max-height: 640px) {
+      #app { padding: 32px 24px 24px; }
+      .stage { width: 220px; height: 220px; }
+      #indicator { width: 104px; height: 104px; }
     }
   </style>
 </head>
 <body>
   <div id="app">
-    <div id="status">Вибрация каждую секунду</div>
-    <div id="indicator"></div>
-    <button id="toggle-btn">Стоп</button>
-    <div id="wake-status">Экран не будет гаснуть</div>
+    <div class="header">
+      <div class="brand">
+        <span class="brand-dot"></span>
+        <span>Vibrate</span>
+      </div>
+      <div id="status">Вибрация каждую секунду</div>
+    </div>
+
+    <div class="stage">
+      <div class="ring ring-1"></div>
+      <div class="ring ring-2"></div>
+      <div class="ring ring-3"></div>
+      <div class="wave"></div>
+      <div id="indicator"></div>
+    </div>
+
+    <div class="footer">
+      <button id="toggle-btn">Стоп</button>
+      <div id="wake-status">Экран не будет гаснуть</div>
+    </div>
   </div>
 
   <script>
@@ -92,6 +327,7 @@
     }
 
     const haptic = tg?.HapticFeedback;
+    const app = document.getElementById('app');
     const indicator = document.getElementById('indicator');
     const statusEl = document.getElementById('status');
     const toggleBtn = document.getElementById('toggle-btn');
@@ -112,7 +348,11 @@
 
       // Visual pulse
       indicator.classList.add('pulse');
-      setTimeout(() => indicator.classList.remove('pulse'), 100);
+      app.classList.remove('pulsing');
+      // Force reflow to restart wave animation
+      void app.offsetWidth;
+      app.classList.add('pulsing');
+      setTimeout(() => indicator.classList.remove('pulse'), 180);
     }
 
     function startVibrating() {
@@ -123,6 +363,7 @@
     function stopVibrating() {
       clearInterval(intervalId);
       intervalId = null;
+      app.classList.remove('pulsing');
     }
 
     toggleBtn.addEventListener('click', () => {
@@ -131,10 +372,12 @@
         startVibrating();
         toggleBtn.textContent = 'Стоп';
         statusEl.textContent = 'Вибрация каждую секунду';
+        app.classList.remove('paused');
       } else {
         stopVibrating();
         toggleBtn.textContent = 'Старт';
         statusEl.textContent = 'Пауза';
+        app.classList.add('paused');
       }
     });
 
