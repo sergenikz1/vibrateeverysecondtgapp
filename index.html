@@ -2,86 +2,350 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <meta name="theme-color" content="#0a0a12" />
   <title>Vibrate</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <style>
+    :root {
+      --bg-0: #07070d;
+      --bg-1: #0e0e1a;
+      --accent: #7c5cff;
+      --accent-2: #21d4fd;
+      --text: #f5f6ff;
+      --text-dim: rgba(245, 246, 255, 0.62);
+      --text-mute: rgba(245, 246, 255, 0.38);
+      --surface: rgba(255, 255, 255, 0.06);
+      --surface-strong: rgba(255, 255, 255, 0.12);
+      --stroke: rgba(255, 255, 255, 0.14);
+      --safe-top: env(safe-area-inset-top, 0px);
+      --safe-bottom: env(safe-area-inset-bottom, 0px);
+    }
+
     * {
       margin: 0;
       padding: 0;
       box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
     }
 
     html, body {
       width: 100%;
       height: 100%;
-      background: #000;
-      color: #fff;
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: var(--bg-0);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', Roboto, sans-serif;
       overflow: hidden;
       touch-action: none;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      background:
+        radial-gradient(120% 80% at 50% 0%, rgba(124, 92, 255, 0.18) 0%, transparent 55%),
+        radial-gradient(90% 70% at 50% 100%, rgba(33, 212, 253, 0.10) 0%, transparent 60%),
+        linear-gradient(180deg, var(--bg-1) 0%, var(--bg-0) 100%);
+      z-index: -2;
+    }
+
+    body::after {
+      content: "";
+      position: fixed;
+      inset: 0;
+      background-image:
+        radial-gradient(rgba(255, 255, 255, 0.045) 1px, transparent 1px);
+      background-size: 3px 3px;
+      opacity: 0.5;
+      pointer-events: none;
+      z-index: -1;
+      mix-blend-mode: screen;
     }
 
     #app {
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: center;
+      justify-content: space-between;
       height: 100dvh;
-      gap: 24px;
+      padding: calc(28px + var(--safe-top)) 24px calc(28px + var(--safe-bottom));
       user-select: none;
     }
 
+    /* ───────────── Header ───────────── */
+    .header {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      text-align: center;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 14px;
+      border-radius: 999px;
+      background: var(--surface);
+      border: 1px solid var(--stroke);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      font-size: 11px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--text-dim);
+      font-weight: 600;
+    }
+
+    .badge .dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #34d399;
+      box-shadow: 0 0 8px rgba(52, 211, 153, 0.9);
+      animation: dot-blink 1s ease-in-out infinite;
+    }
+
+    .badge.paused .dot {
+      background: #f59e0b;
+      box-shadow: 0 0 8px rgba(245, 158, 11, 0.8);
+      animation: none;
+    }
+
+    @keyframes dot-blink {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.35; transform: scale(0.85); }
+    }
+
     #status {
-      font-size: 18px;
-      opacity: 0.7;
-      letter-spacing: 0.05em;
+      font-size: 20px;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+      opacity: 0.95;
+    }
+
+    .subtitle {
+      font-size: 13px;
+      color: var(--text-mute);
+      letter-spacing: 0.02em;
+    }
+
+    /* ───────────── Center / Indicator ───────────── */
+    .stage {
+      position: relative;
+      flex: 1;
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .ring {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 220px;
+      height: 220px;
+      margin: -110px 0 0 -110px;
+      border-radius: 50%;
+      border: 1px solid var(--stroke);
+      pointer-events: none;
+    }
+
+    .ring.r2 {
+      width: 300px;
+      height: 300px;
+      margin: -150px 0 0 -150px;
+      border-color: rgba(255, 255, 255, 0.07);
+    }
+
+    .ring.r3 {
+      width: 380px;
+      height: 380px;
+      margin: -190px 0 0 -190px;
+      border-color: rgba(255, 255, 255, 0.04);
+    }
+
+    .ripple {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 140px;
+      height: 140px;
+      margin: -70px 0 0 -70px;
+      border-radius: 50%;
+      border: 2px solid var(--accent);
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .ripple.active {
+      animation: ripple-out 900ms ease-out forwards;
+    }
+
+    @keyframes ripple-out {
+      0%   { transform: scale(0.9); opacity: 0.55; border-width: 2px; }
+      100% { transform: scale(2.4); opacity: 0; border-width: 1px; }
     }
 
     #indicator {
-      width: 80px;
-      height: 80px;
+      position: relative;
+      width: 140px;
+      height: 140px;
       border-radius: 50%;
-      background: #fff;
-      transition: transform 0.05s ease, opacity 0.05s ease;
+      background:
+        radial-gradient(circle at 35% 30%, rgba(255, 255, 255, 0.95) 0%, rgba(245, 246, 255, 0.85) 35%, rgba(124, 92, 255, 0.9) 100%);
+      box-shadow:
+        0 0 0 1px rgba(255, 255, 255, 0.18) inset,
+        0 0 60px rgba(124, 92, 255, 0.55),
+        0 0 120px rgba(124, 92, 255, 0.35),
+        0 20px 50px rgba(0, 0, 0, 0.5);
+      transition: transform 0.18s cubic-bezier(0.34, 1.56, 0.64, 1),
+                  box-shadow 0.18s ease,
+                  opacity 0.18s ease;
+    }
+
+    #indicator::after {
+      content: "";
+      position: absolute;
+      inset: 14px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 35% 28%, rgba(255, 255, 255, 0.55), transparent 55%);
+      pointer-events: none;
     }
 
     #indicator.pulse {
-      transform: scale(1.3);
-      opacity: 0.4;
+      transform: scale(1.14);
+      box-shadow:
+        0 0 0 1px rgba(255, 255, 255, 0.3) inset,
+        0 0 90px rgba(124, 92, 255, 0.85),
+        0 0 180px rgba(33, 212, 253, 0.45),
+        0 20px 60px rgba(0, 0, 0, 0.55);
     }
 
-    #wake-status {
-      font-size: 13px;
-      opacity: 0.4;
-      text-align: center;
-      padding: 0 24px;
+    /* Paused look — softer, monochrome glow */
+    .paused-mode #indicator {
+      background:
+        radial-gradient(circle at 35% 30%, rgba(255, 255, 255, 0.7) 0%, rgba(180, 180, 200, 0.55) 60%, rgba(80, 80, 100, 0.6) 100%);
+      box-shadow:
+        0 0 0 1px rgba(255, 255, 255, 0.12) inset,
+        0 0 40px rgba(150, 150, 170, 0.25),
+        0 20px 50px rgba(0, 0, 0, 0.5);
+    }
+
+    /* ───────────── Footer / Controls ───────────── */
+    .footer {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 14px;
     }
 
     #toggle-btn {
-      margin-top: 12px;
-      padding: 12px 32px;
-      border-radius: 24px;
-      border: 1px solid rgba(255,255,255,0.3);
-      background: transparent;
+      position: relative;
+      min-width: 220px;
+      padding: 16px 36px;
+      border-radius: 999px;
+      border: none;
+      background: linear-gradient(135deg, var(--accent) 0%, #5a3df0 100%);
       color: #fff;
       font-size: 16px;
+      font-weight: 600;
+      letter-spacing: 0.02em;
       cursor: pointer;
-      transition: background 0.2s;
-      -webkit-tap-highlight-color: transparent;
+      overflow: hidden;
+      box-shadow:
+        0 10px 30px rgba(124, 92, 255, 0.45),
+        0 0 0 1px rgba(255, 255, 255, 0.12) inset;
+      transition: transform 0.15s ease, box-shadow 0.2s ease, background 0.25s ease;
+    }
+
+    #toggle-btn::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.22), transparent 50%);
+      pointer-events: none;
     }
 
     #toggle-btn:active {
-      background: rgba(255,255,255,0.1);
+      transform: translateY(1px) scale(0.985);
+      box-shadow:
+        0 6px 18px rgba(124, 92, 255, 0.4),
+        0 0 0 1px rgba(255, 255, 255, 0.16) inset;
+    }
+
+    .paused-mode #toggle-btn {
+      background: linear-gradient(135deg, #2a2a3a 0%, #1a1a26 100%);
+      box-shadow:
+        0 8px 24px rgba(0, 0, 0, 0.5),
+        0 0 0 1px var(--stroke) inset;
+    }
+
+    #wake-status {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      color: var(--text-mute);
+      letter-spacing: 0.02em;
+      text-align: center;
+      padding: 8px 14px;
+      border-radius: 999px;
+      background: var(--surface);
+      border: 1px solid var(--stroke);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+    }
+
+    #wake-status::before {
+      content: "";
+      width: 14px;
+      height: 14px;
+      flex: 0 0 14px;
+      background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23ffffff' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' opacity='0.65'><rect x='3' y='5' width='14' height='14' rx='2'/><path d='M21 9v6'/></svg>");
+      background-size: contain;
+      background-repeat: no-repeat;
+    }
+
+    /* ───────────── Small screens tweak ───────────── */
+    @media (max-height: 640px) {
+      .ring.r3 { display: none; }
+      #indicator { width: 120px; height: 120px; }
+      .ripple { width: 120px; height: 120px; margin: -60px 0 0 -60px; }
+      .ring { width: 190px; height: 190px; margin: -95px 0 0 -95px; }
+      .ring.r2 { width: 260px; height: 260px; margin: -130px 0 0 -130px; }
     }
   </style>
 </head>
 <body>
   <div id="app">
-    <div id="status">Вибрация каждую секунду</div>
-    <div id="indicator"></div>
-    <button id="toggle-btn">Стоп</button>
-    <div id="wake-status">Экран не будет гаснуть</div>
+    <div class="header">
+      <div class="badge" id="badge">
+        <span class="dot"></span>
+        <span id="badge-label">В работе</span>
+      </div>
+      <div id="status">Вибрация каждую секунду</div>
+      <div class="subtitle">Ритм 60 BPM · мягкая отдача</div>
+    </div>
+
+    <div class="stage">
+      <div class="ring r3"></div>
+      <div class="ring r2"></div>
+      <div class="ring"></div>
+      <div class="ripple" id="ripple"></div>
+      <div id="indicator"></div>
+    </div>
+
+    <div class="footer">
+      <button id="toggle-btn">Стоп</button>
+      <div id="wake-status">Экран не будет гаснуть</div>
+    </div>
   </div>
 
   <script>
@@ -96,6 +360,10 @@
     const statusEl = document.getElementById('status');
     const toggleBtn = document.getElementById('toggle-btn');
     const wakeStatusEl = document.getElementById('wake-status');
+    const ripple = document.getElementById('ripple');
+    const badge = document.getElementById('badge');
+    const badgeLabel = document.getElementById('badge-label');
+    const appEl = document.getElementById('app');
 
     let running = true;
     let intervalId = null;
@@ -113,6 +381,12 @@
       // Visual pulse
       indicator.classList.add('pulse');
       setTimeout(() => indicator.classList.remove('pulse'), 100);
+
+      // Ripple wave
+      ripple.classList.remove('active');
+      // force reflow to restart animation
+      void ripple.offsetWidth;
+      ripple.classList.add('active');
     }
 
     function startVibrating() {
@@ -131,10 +405,16 @@
         startVibrating();
         toggleBtn.textContent = 'Стоп';
         statusEl.textContent = 'Вибрация каждую секунду';
+        badgeLabel.textContent = 'В работе';
+        badge.classList.remove('paused');
+        appEl.classList.remove('paused-mode');
       } else {
         stopVibrating();
         toggleBtn.textContent = 'Старт';
         statusEl.textContent = 'Пауза';
+        badgeLabel.textContent = 'Пауза';
+        badge.classList.add('paused');
+        appEl.classList.add('paused-mode');
       }
     });
 
