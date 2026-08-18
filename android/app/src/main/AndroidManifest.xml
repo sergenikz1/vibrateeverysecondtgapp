@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <!-- голосовой поиск на пульте -->
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+
+    <!-- Приложение рассчитано на ТВ, но ставится и на обычные Android-боксы -->
+    <uses-feature
+        android:name="android.software.leanback"
+        android:required="false" />
+    <uses-feature
+        android:name="android.hardware.touchscreen"
+        android:required="false" />
+
+    <application
+        android:allowBackup="true"
+        android:banner="@drawable/app_banner"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:largeHeap="true"
+        android:supportsRtl="false"
+        android:usesCleartextTraffic="true"
+        android:theme="@style/Theme.RuTV">
+
+        <activity
+            android:name=".ui.MainActivity"
+            android:exported="true"
+            android:theme="@style/Theme.RuTV.Browse"
+            android:screenOrientation="landscape"
+            android:launchMode="singleTop">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LEANBACK_LAUNCHER" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <activity
+            android:name=".ui.SearchActivity"
+            android:exported="false"
+            android:theme="@style/Theme.RuTV"
+            android:screenOrientation="landscape" />
+
+        <activity
+            android:name=".ui.DetailsActivity"
+            android:exported="false"
+            android:theme="@style/Theme.RuTV.Details"
+            android:screenOrientation="landscape" />
+
+        <activity
+            android:name=".ui.ChannelActivity"
+            android:exported="false"
+            android:theme="@style/Theme.RuTV.VerticalGrid"
+            android:screenOrientation="landscape" />
+
+        <activity
+            android:name=".ui.SettingsActivity"
+            android:exported="false"
+            android:theme="@style/Theme.RuTV.Settings"
+            android:screenOrientation="landscape" />
+
+        <activity
+            android:name=".player.PlayerActivity"
+            android:exported="true"
+            android:configChanges="keyboard|keyboardHidden|orientation|screenSize|screenLayout|smallestScreenSize|uiMode"
+            android:launchMode="singleTask"
+            android:resizeableActivity="true"
+            android:screenOrientation="landscape"
+            android:supportsPictureInPicture="true"
+            android:theme="@style/Theme.RuTV.Player">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="https" android:host="rutube.ru" android:pathPrefix="/video/" />
+                <data android:scheme="https" android:host="rutube.ru" android:pathPrefix="/shorts/" />
+            </intent-filter>
+        </activity>
+    </application>
+</manifest>

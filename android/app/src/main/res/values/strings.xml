@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">RuTV</string>
+    <string name="browse_title">RuTV</string>
+
+    <string name="row_history">Продолжить просмотр</string>
+    <string name="row_favorites">Избранное</string>
+    <string name="row_new">Новое на Rutube</string>
+    <string name="row_subscriptions">Мои каналы</string>
+    <string name="menu_row">Ещё</string>
+
+    <string name="action_search">Поиск</string>
+    <string name="action_settings">Настройки</string>
+    <string name="action_refresh">Обновить</string>
+    <string name="action_watch">Смотреть</string>
+    <string name="action_resume">Продолжить с %1$s</string>
+    <string name="action_fav_add">В избранное</string>
+    <string name="action_fav_remove">Убрать из избранного</string>
+    <string name="action_channel">Канал</string>
+    <string name="action_pin_channel">Закрепить канал</string>
+    <string name="action_unpin_channel">Открепить канал</string>
+
+    <string name="search_hint">Поиск видео на Rutube</string>
+    <string name="search_results">Результаты: «%1$s»</string>
+    <string name="search_empty">Ничего не найдено</string>
+
+    <string name="loading">Загрузка…</string>
+    <string name="error_network">Не удалось загрузить данные. Проверьте интернет и попробуйте ещё раз.</string>
+    <string name="error_playback">Не удалось воспроизвести видео</string>
+    <string name="error_no_stream">Для этого видео нет доступного потока</string>
+    <string name="empty_favorites">Здесь появятся видео, добавленные в избранное</string>
+    <string name="empty_history">Здесь появятся видео, которые вы смотрели</string>
+
+    <string name="settings_title">Настройки</string>
+    <string name="settings_quality">Максимальное качество</string>
+    <string name="settings_quality_summary">Ограничение по высоте кадра</string>
+    <string name="settings_autoplay">Автовоспроизведение следующего</string>
+    <string name="settings_clear_history">Очистить историю просмотра</string>
+    <string name="settings_clear_favorites">Очистить избранное</string>
+    <string name="settings_cleared">Готово</string>
+    <string name="settings_about">О приложении</string>
+
+    <string name="views_count">%1$s просмотров</string>
+    <string name="live_now">В эфире</string>
+</resources>
