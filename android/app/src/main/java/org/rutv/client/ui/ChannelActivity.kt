@@ -8,8 +8,6 @@ import androidx.fragment.app.FragmentActivity
 import androidx.leanback.app.VerticalGridSupportFragment
 import androidx.leanback.widget.ArrayObjectAdapter
 import androidx.leanback.widget.FocusHighlight
-import androidx.leanback.widget.OnItemViewClickedListener
-import androidx.leanback.widget.OnItemViewSelectedListener
 import androidx.leanback.widget.VerticalGridPresenter
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.launch
@@ -64,10 +62,11 @@ class ChannelFragment : VerticalGridSupportFragment() {
         }
         adapter = itemsAdapter
 
-        onItemViewClickedListener = OnItemViewClickedListener { _, item, _, _ ->
+        // у VerticalGridSupportFragment для слушателей есть только сеттеры
+        setOnItemViewClickedListener { _, item, _, _ ->
             if (item is VideoItem) startActivity(DetailsActivity.intent(requireContext(), item))
         }
-        onItemViewSelectedListener = OnItemViewSelectedListener { _, item, _, _ ->
+        setOnItemViewSelectedListener { _, item, _, _ ->
             if (item is VideoItem && itemsAdapter.indexOf(item) >= itemsAdapter.size() - COLUMNS * 2) {
                 loadNext()
             }
