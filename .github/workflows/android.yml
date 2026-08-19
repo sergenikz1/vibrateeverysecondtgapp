@@ -65,10 +65,10 @@ jobs:
           if-no-files-found: error
           retention-days: 30
 
-      # Запасной канал доставки, срабатывает только при ручном запуске
-      # (Actions -> Build Android TV APK -> Run workflow).
+      # Основной канал доставки, пока исчерпана квота на артефакты Actions:
+      # push и ручной запуск обновляют предрелиз apk-latest свежим APK.
       - name: Publish APK to apk-latest release
-        if: github.event_name == 'workflow_dispatch'
+        if: github.event_name != 'pull_request'
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
