@@ -28,7 +28,10 @@ Workflow `.github/workflows/android.yml` собирает APK на каждый 
 каталог `android/`. Готовый файл лежит в артефактах запуска (`RuTV-apk`):
 **Actions → нужный запуск → Artifacts**.
 
-Запустить вручную: **Actions → Build Android TV APK → Run workflow**.
+Запустить вручную: **Actions → Build Android TV APK → Run workflow**. При
+ручном запуске APK дополнительно публикуется в предрелиз `apk-latest` —
+это запасной путь на случай, когда в аккаунте кончилась квота на артефакты
+Actions (тогда шаг с артефактом падает, но сборку не валит).
 
 ### Локально
 
