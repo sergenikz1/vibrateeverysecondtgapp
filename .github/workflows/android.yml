@@ -15,6 +15,9 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
+    permissions:
+      contents: write
+
     env:
       RUTV_KEYSTORE_BASE64: ${{ secrets.RUTV_KEYSTORE_BASE64 }}
       RUTV_KEYSTORE_PASSWORD: ${{ secrets.RUTV_KEYSTORE_PASSWORD }}
@@ -51,10 +54,26 @@ jobs:
           cp app/build/outputs/apk/release/*.apk "out/RuTV-$(git rev-parse --short HEAD).apk"
           ls -la out
 
-      - name: Upload APK
+      # Квота на артефакты в аккаунте может быть исчерпана — это не повод
+      # валить сборку: APK в таком случае берётся из релиза apk-latest.
+      - name: Upload APK artifact
         uses: actions/upload-artifact@v4
+        continue-on-error: true
         with:
           name: RuTV-apk
           path: android/out/*.apk
           if-no-files-found: error
           retention-days: 30
+
+      # Запасной канал доставки, срабатывает только при ручном запуске
+      # (Actions -> Build Android TV APK -> Run workflow).
+      - name: Publish APK to apk-latest release
+        if: github.event_name == 'workflow_dispatch'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release view apk-latest >/dev/null 2>&1 || gh release create apk-latest \
+            --title "RuTV APK" \
+            --notes "Автосборка клиента Rutube для ТВ. Обновляется ручным запуском workflow." \
+            --prerelease
+          gh release upload apk-latest android/out/*.apk --clobber
