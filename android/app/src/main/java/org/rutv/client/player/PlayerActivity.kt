@@ -5,6 +5,7 @@ import android.content.Intent
 import android.os.Bundle
 import android.view.KeyEvent
 import android.view.View
+import android.widget.Button
 import android.widget.ProgressBar
 import android.widget.TextView
 import androidx.annotation.OptIn
@@ -38,7 +39,10 @@ class PlayerActivity : FragmentActivity() {
     private lateinit var prefs: Prefs
     private lateinit var playerView: PlayerView
     private lateinit var progress: ProgressBar
+    private lateinit var errorPanel: View
     private lateinit var errorView: TextView
+    private lateinit var retryButton: Button
+    private lateinit var titleView: TextView
 
     private var player: ExoPlayer? = null
     private var video: VideoItem? = null
@@ -50,7 +54,26 @@ class PlayerActivity : FragmentActivity() {
         prefs = Prefs.get(this)
         playerView = findViewById(R.id.player_view)
         progress = findViewById(R.id.player_progress)
+        errorPanel = findViewById(R.id.player_error_panel)
         errorView = findViewById(R.id.player_error)
+        retryButton = findViewById(R.id.player_retry)
+        titleView = findViewById(R.id.player_title)
+
+        retryButton.setOnClickListener { preparePlayback() }
+
+        // название показывается вместе с панелью управления
+        playerView.setControllerVisibilityListener(
+            object : PlayerView.ControllerVisibilityListener {
+                override fun onVisibilityChanged(visibility: Int) {
+                    titleView.visibility =
+                        if (visibility == View.VISIBLE && titleView.text.isNotBlank()) {
+                            View.VISIBLE
+                        } else {
+                            View.GONE
+                        }
+                }
+            }
+        )
 
         @Suppress("UNCHECKED_CAST")
         queue = (intent.getSerializableExtra(EXTRA_QUEUE) as? ArrayList<VideoItem>) ?: emptyList()
@@ -78,6 +101,7 @@ class PlayerActivity : FragmentActivity() {
 
     private fun preparePlayback() {
         val item = video ?: return
+        titleView.text = item.title
         showLoading()
         lifecycleScope.launch {
             try {
@@ -113,7 +137,7 @@ class PlayerActivity : FragmentActivity() {
             override fun onPlaybackStateChanged(playbackState: Int) {
                 progress.visibility =
                     if (playbackState == Player.STATE_BUFFERING) View.VISIBLE else View.GONE
-                if (playbackState == Player.STATE_READY) errorView.visibility = View.GONE
+                if (playbackState == Player.STATE_READY) errorPanel.visibility = View.GONE
                 if (playbackState == Player.STATE_ENDED) onPlaybackEnded()
             }
 
@@ -130,7 +154,7 @@ class PlayerActivity : FragmentActivity() {
         exo.playWhenReady = true
         exo.prepare()
         player = exo
-        errorView.visibility = View.GONE
+        errorPanel.visibility = View.GONE
     }
 
     private fun onPlaybackEnded() {
@@ -161,13 +185,14 @@ class PlayerActivity : FragmentActivity() {
 
     private fun showLoading() {
         progress.visibility = View.VISIBLE
-        errorView.visibility = View.GONE
+        errorPanel.visibility = View.GONE
     }
 
     private fun showError(message: String) {
         progress.visibility = View.GONE
         errorView.text = message
-        errorView.visibility = View.VISIBLE
+        errorPanel.visibility = View.VISIBLE
+        retryButton.requestFocus()
     }
 
     private fun savePosition() {

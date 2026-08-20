@@ -127,6 +127,11 @@ class VideoDetailsFragment : DetailsSupportFragment() {
             getString(R.string.action_watch)
         }
         actionsAdapter.add(Action(ACTION_WATCH, watchTitle))
+        if (resume > 0) {
+            actionsAdapter.add(
+                Action(ACTION_RESTART, getString(R.string.action_watch_from_start))
+            )
+        }
         actionsAdapter.add(
             Action(
                 ACTION_FAVORITE,
@@ -151,6 +156,13 @@ class VideoDetailsFragment : DetailsSupportFragment() {
             ACTION_WATCH -> startActivity(
                 PlayerActivity.intent(requireContext(), video, ArrayList(channelVideos))
             )
+            ACTION_RESTART -> {
+                prefs.savePosition(video.id, 0L, 0L)
+                rebuildActions()
+                startActivity(
+                    PlayerActivity.intent(requireContext(), video, ArrayList(channelVideos))
+                )
+            }
             ACTION_FAVORITE -> {
                 prefs.toggleFavorite(video)
                 rebuildActions()
@@ -244,5 +256,6 @@ class VideoDetailsFragment : DetailsSupportFragment() {
         private const val ACTION_FAVORITE = 2L
         private const val ACTION_CHANNEL = 3L
         private const val ACTION_PIN = 4L
+        private const val ACTION_RESTART = 5L
     }
 }

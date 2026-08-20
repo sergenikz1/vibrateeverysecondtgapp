@@ -8,10 +8,15 @@
     <string name="row_new">Новое на Rutube</string>
     <string name="row_subscriptions">Мои каналы</string>
     <string name="menu_row">Ещё</string>
+    <string name="menu_search_subtitle">Найти видео или канал</string>
+    <string name="menu_settings_subtitle">Качество, история, избранное</string>
+    <string name="menu_refresh_subtitle">Перезагрузить ленту</string>
 
     <string name="action_search">Поиск</string>
     <string name="action_settings">Настройки</string>
     <string name="action_refresh">Обновить</string>
+    <string name="action_retry">Повторить</string>
+    <string name="action_watch_from_start">Смотреть с начала</string>
     <string name="action_watch">Смотреть</string>
     <string name="action_resume">Продолжить с %1$s</string>
     <string name="action_fav_add">В избранное</string>
@@ -22,9 +27,10 @@
 
     <string name="search_hint">Поиск видео на Rutube</string>
     <string name="search_results">Результаты: «%1$s»</string>
-    <string name="search_empty">Ничего не найдено</string>
+    <string name="search_empty">По запросу «%1$s» ничего не нашлось</string>
+    <string name="search_empty_hint">Попробуйте другой запрос</string>
 
-    <string name="loading">Загрузка…</string>
+    <string name="loading">Загружаем ленту Rutube…</string>
     <string name="error_network">Не удалось загрузить данные. Проверьте интернет и попробуйте ещё раз.</string>
     <string name="error_playback">Не удалось воспроизвести видео</string>
     <string name="error_no_stream">Для этого видео нет доступного потока</string>

@@ -34,6 +34,9 @@ class MainFragment : BrowseSupportFragment() {
     private var feedHasNext = true
     private var feedLoading = false
 
+    private val status: StatusHost?
+        get() = activity as? StatusHost
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         prefs = Prefs.get(requireContext())
@@ -135,9 +138,27 @@ class MainFragment : BrowseSupportFragment() {
         rowsAdapter.add(ListRow(HeaderItem(headerId++, getString(R.string.row_new)), feedAdapter))
 
         val menu = ArrayObjectAdapter(MenuCardPresenter()).apply {
-            add(MenuCard(MenuCard.ACTION_SEARCH, getString(R.string.action_search)))
-            add(MenuCard(MenuCard.ACTION_SETTINGS, getString(R.string.action_settings)))
-            add(MenuCard(MenuCard.ACTION_REFRESH, getString(R.string.action_refresh)))
+            add(
+                MenuCard(
+                    MenuCard.ACTION_SEARCH,
+                    getString(R.string.action_search),
+                    getString(R.string.menu_search_subtitle)
+                )
+            )
+            add(
+                MenuCard(
+                    MenuCard.ACTION_SETTINGS,
+                    getString(R.string.action_settings),
+                    getString(R.string.menu_settings_subtitle)
+                )
+            )
+            add(
+                MenuCard(
+                    MenuCard.ACTION_REFRESH,
+                    getString(R.string.action_refresh),
+                    getString(R.string.menu_refresh_subtitle)
+                )
+            )
         }
         rowsAdapter.add(ListRow(HeaderItem(headerId, getString(R.string.menu_row)), menu))
     }
@@ -145,6 +166,9 @@ class MainFragment : BrowseSupportFragment() {
     private fun loadNextFeedPage() {
         if (feedLoading || !feedHasNext) return
         feedLoading = true
+        val firstPage = feedAdapter.size() == 0
+        if (firstPage) status?.showLoading()
+
         viewLifecycleOwner.lifecycleScope.launch {
             try {
                 val page = Repository.feed(feedPage + 1)
@@ -156,14 +180,19 @@ class MainFragment : BrowseSupportFragment() {
                 }
                 val fresh = page.items.filter { known.add(it.id) }
                 if (fresh.isNotEmpty()) feedAdapter.addAll(feedAdapter.size(), fresh)
+                status?.hideStatus()
             } catch (e: Exception) {
                 feedHasNext = false
-                if (feedAdapter.size() == 0 && isAdded) {
-                    Toast.makeText(
-                        requireContext(),
-                        e.message ?: getString(R.string.error_network),
-                        Toast.LENGTH_LONG
-                    ).show()
+                if (!isAdded) return@launch
+                val text = e.message?.takeIf { it.isNotBlank() }
+                    ?: getString(R.string.error_network)
+                if (feedAdapter.size() == 0) {
+                    status?.showError(text) {
+                        feedHasNext = true
+                        loadNextFeedPage()
+                    }
+                } else {
+                    Toast.makeText(requireContext(), text, Toast.LENGTH_LONG).show()
                 }
             } finally {
                 feedLoading = false

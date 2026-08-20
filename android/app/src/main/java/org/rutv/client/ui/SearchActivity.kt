@@ -3,11 +3,13 @@ package org.rutv.client.ui
 import android.Manifest
 import android.content.pm.PackageManager
 import android.os.Bundle
+import android.view.KeyEvent
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.FragmentActivity
 import androidx.leanback.app.SearchSupportFragment
 import androidx.leanback.widget.ArrayObjectAdapter
+import androidx.leanback.widget.ClassPresenterSelector
 import androidx.leanback.widget.HeaderItem
 import androidx.leanback.widget.ListRow
 import androidx.leanback.widget.ListRowPresenter
@@ -19,8 +21,10 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.rutv.client.R
+import org.rutv.client.data.MenuCard
 import org.rutv.client.data.Repository
 import org.rutv.client.data.VideoItem
+import org.rutv.client.util.Ime
 
 class SearchActivity : FragmentActivity() {
 
@@ -33,6 +37,14 @@ class SearchActivity : FragmentActivity() {
                 .replace(R.id.fragment_container, VideoSearchFragment())
                 .commit()
         }
+    }
+
+    /** Пока открыта экранная клавиатура, «Назад» закрывает её, а не экран поиска. */
+    override fun dispatchKeyEvent(event: KeyEvent): Boolean {
+        if (event.keyCode == KeyEvent.KEYCODE_BACK && event.action == KeyEvent.ACTION_UP) {
+            if (Ime.hideIfVisible(this)) return true
+        }
+        return super.dispatchKeyEvent(event)
     }
 
     /** Голосовой поиск в leanback работает только с выданным разрешением. */
@@ -48,7 +60,11 @@ class SearchActivity : FragmentActivity() {
 class VideoSearchFragment : SearchSupportFragment(), SearchSupportFragment.SearchResultProvider {
 
     private val rowsAdapter = ArrayObjectAdapter(ListRowPresenter())
-    private val resultsAdapter = ArrayObjectAdapter(CardPresenter())
+    private val resultsAdapter = ArrayObjectAdapter(
+        ClassPresenterSelector()
+            .addClassPresenter(VideoItem::class.java, CardPresenter())
+            .addClassPresenter(MenuCard::class.java, MenuCardPresenter())
+    )
 
     private var query: String = ""
     private var page = 0
@@ -133,12 +149,26 @@ class VideoSearchFragment : SearchSupportFragment(), SearchSupportFragment.Searc
                 }
                 val fresh = result.items.filter { known.add(it.id) }
                 if (fresh.isNotEmpty()) resultsAdapter.addAll(resultsAdapter.size(), fresh)
+                if (resultsAdapter.size() == 0 && isAdded) showEmpty(requestedQuery)
             } catch (e: Exception) {
+                if (resultsAdapter.size() == 0 && isAdded) showEmpty(requestedQuery)
                 hasNext = false
             } finally {
                 loading = false
             }
         }
+    }
+
+    /** Пустая выдача — не пустой экран: показываем понятную карточку-подсказку. */
+    private fun showEmpty(query: String) {
+        resultsAdapter.clear()
+        resultsAdapter.add(
+            MenuCard(
+                MenuCard.ACTION_SEARCH,
+                getString(R.string.search_empty, query),
+                getString(R.string.search_empty_hint)
+            )
+        )
     }
 
     companion object {
