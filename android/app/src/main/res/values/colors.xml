@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="brand_accent">#FF00C07A</color>
+    <color name="brand_accent_dark">#FF00915C</color>
+    <color name="brand_blue">#FF008FE0</color>
+    <color name="background_dark">#FF0D1218</color>
+    <color name="background_card">#FF17202B</color>
+    <color name="text_primary">#FFEFF3F6</color>
+    <color name="text_secondary">#FF9AA7B4</color>
+    <color name="search_opaque">#FF17202B</color>
+</resources>

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="card_width">252dp</dimen>
+    <dimen name="card_height">142dp</dimen>
+    <dimen name="grid_card_width">228dp</dimen>
+    <dimen name="grid_card_height">128dp</dimen>
+    <dimen name="detail_thumb_width">380dp</dimen>
+    <dimen name="detail_thumb_height">214dp</dimen>
+</resources>

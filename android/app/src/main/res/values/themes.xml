@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.RuTV" parent="@style/Theme.Leanback">
+        <item name="android:windowBackground">@color/background_dark</item>
+        <item name="android:colorAccent">@color/brand_accent</item>
+    </style>
+
+    <style name="Theme.RuTV.Browse" parent="@style/Theme.Leanback.Browse">
+        <item name="android:windowBackground">@color/background_dark</item>
+        <item name="android:colorAccent">@color/brand_accent</item>
+    </style>
+
+    <style name="Theme.RuTV.Details" parent="@style/Theme.Leanback.Details">
+        <item name="android:windowBackground">@color/background_dark</item>
+        <item name="android:colorAccent">@color/brand_accent</item>
+    </style>
+
+    <style name="Theme.RuTV.VerticalGrid" parent="@style/Theme.Leanback.VerticalGrid">
+        <item name="android:windowBackground">@color/background_dark</item>
+        <item name="android:colorAccent">@color/brand_accent</item>
+    </style>
+
+    <style name="Theme.RuTV.Player" parent="@android:style/Theme.Black.NoTitleBar.Fullscreen">
+        <item name="android:windowBackground">@android:color/black</item>
+        <item name="android:colorAccent">@color/brand_accent</item>
+    </style>
+
+    <style name="Theme.RuTV.Settings" parent="@style/Theme.Leanback.GuidedStep">
+        <item name="android:windowBackground">@color/background_dark</item>
+        <item name="android:colorAccent">@color/brand_accent</item>
+    </style>
+</resources>
